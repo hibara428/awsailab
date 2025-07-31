@@ -30,13 +30,8 @@ Directories will be created as needed for specific projects and experiments.
 
 ## MCP Servers Configuration
 This repository is configured with the following MCP servers (see .mcp.json):
-- **aws-docs**: AWS documentation and API references
-- **aws-serverless**: Serverless development guidance (Lambda, API Gateway, etc.)
-- **aws-bedrock**: Amazon Bedrock AI/ML services
-- **aws-cdk**: Infrastructure as Code with CDK
-- **aws-iam**: IAM policies and security configurations
-- **aws-pricing**: Cost estimation and pricing analysis
-- **aws-diagram**: AWS architecture diagram generation
+- **aws-diagram**: AWS architecture diagram generation using Python diagrams
+- **aws-knowledge**: AWS documentation, API references, and search capabilities
 
 ## Claude Code Instructions
 When working with this repository:
