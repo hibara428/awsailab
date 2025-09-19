@@ -9,7 +9,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10,<3.13"
 dependencies = [
-    "awslabs-aws-diagram-mcp-server>=1.0.4",
+    "awslabs-aws-diagram-mcp-server>=1.1.0",
 ]
 
 [project.optional-dependencies]
