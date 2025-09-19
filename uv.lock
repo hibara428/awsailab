@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 4
 requires-python = ">=3.10, <3.13"
 
 [[package]]
@@ -52,7 +52,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "awslabs-aws-diagram-mcp-server", specifier = ">=1.0.4" },
+    { name = "awslabs-aws-diagram-mcp-server", specifier = ">=1.1.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
@@ -61,7 +61,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "awslabs-aws-diagram-mcp-server"
-version = "1.0.4"
+version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bandit" },
@@ -73,9 +73,9 @@ dependencies = [
     { name = "starlette" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/77/07/6d532def95bb73829ac5fd5071a73013c33dc0b8d17b14e7276efafc38a1/awslabs_aws_diagram_mcp_server-1.0.4.tar.gz", hash = "sha256:cd599277d9c1616d77af5cf657ce1a719eed326cdb3a992605c20ebade3ba953", size = 92242, upload-time = "2025-07-29T17:59:48.146Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5f/3a/9fb3cda76c7281b7f01d1c0b56f2a61dcd418f46184b6c6a44f2bf5fb97c/awslabs_aws_diagram_mcp_server-1.1.0.tar.gz", hash = "sha256:ad7a8d6fbd1e68f6a2f37d3a8a0f40868d2f6769e5f2c3440a8de9f26a2c5f12", size = 94850, upload-time = "2025-09-15T12:04:21.000Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/22/5f/f77af031ec6612abaff503794741dffc2eb29d16aa27e4fb9126dbb191f0/awslabs_aws_diagram_mcp_server-1.0.4-py3-none-any.whl", hash = "sha256:29597a38beae6117517715629e8b02766daf7616bf64508cd72fa583130eb9b3", size = 25287, upload-time = "2025-07-29T17:59:46.746Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/3c/5e9b2db6a1f5ea2e7f9ce2f0f6ce6ec8d9fb621a5b7ddc86f0aa7f7d21c0/awslabs_aws_diagram_mcp_server-1.1.0-py3-none-any.whl", hash = "sha256:8f4d1767c96e4b4be6d6d8f8c2ad1d92f0a7da3d5ea9bb91f00ad9e585b9e955", size = 26482, upload-time = "2025-09-15T12:04:19.000Z" },
 ]
 
 [[package]]
@@ -95,30 +95,30 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.39.17"
+version = "1.39.45"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/70/15/8c2f455fccd6253ae2a95d7d872fcce27adab8c719218027b7c31a48542b/boto3-1.39.17.tar.gz", hash = "sha256:a6904a40b1c61f6a1766574b3155ec75a6020399fb570be2b51bf93a2c0a2b3d", size = 111831, upload-time = "2025-07-30T19:27:05.162Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/73/df/eb7c9c87c5fa70b14a6b056c3aa98f8d5a5a0f9f51f3251f33cf458066a3/boto3-1.39.45.tar.gz", hash = "sha256:4dcd9c2f4a996bc8b42cf7308bb91d63c47fd31c07a0bb6ab3a3f4be7602a7b8", size = 112540, upload-time = "2025-10-08T15:18:11.000Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f0/45/8321081d478881779551692a185bbe19574a2ac87294f5096c549837292c/boto3-1.39.17-py3-none-any.whl", hash = "sha256:6af9f7d6db7b5e72d6869ae22ebad1b0c6602591af2ef5d914b331a055953df5", size = 139901, upload-time = "2025-07-30T19:27:04.001Z" },
+    { url = "https://files.pythonhosted.org/packages/59/98/24f89f7f2bbd4c78601af68845f1264d0120b45a046cc290b548885de705/boto3-1.39.45-py3-none-any.whl", hash = "sha256:ca6b87b7932b7ff58a41f2b8cdcf9170f36151e9ae6ba3f69dd728a480c5f4b3", size = 140225, upload-time = "2025-10-08T15:18:09.000Z" },
 ]
 
 [[package]]
 name = "botocore"
-version = "1.39.17"
+version = "1.39.45"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/9d/fc3cfb3305c355dde52870434917304c40dfb642c332c9edbe646939a3bc/botocore-1.39.17.tar.gz", hash = "sha256:1a1f0b29dab5d1b10d16f14423c16ac0a3043272f579e9ab0d757753ee9a7d2b", size = 14250697, upload-time = "2025-07-30T19:26:55.626Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/18/3d/da738c23e1cb8ec761fbde82d5863c2efb622f2ce455c7f00efa4bb9fa2a/botocore-1.39.45.tar.gz", hash = "sha256:2c5d4f94897f5c05903f4e6f557cb46c3f4a89e625e7c5f0d785aec80d141a65", size = 14278412, upload-time = "2025-10-08T15:17:54.000Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/40/d16536e0db30c35c14cfd7f2227fccb59f7b999b501ed410bddb9e1492cf/botocore-1.39.17-py3-none-any.whl", hash = "sha256:41db169e919f821b3ef684794c5e67dd7bb1f5ab905d33729b1d8c27fafe8004", size = 13908201, upload-time = "2025-07-30T19:26:50.726Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/12/9ef2c8cbc8528b6b3742b53df643c8c541bed8f1f9ec01cfa35c7a613a34/botocore-1.39.45-py3-none-any.whl", hash = "sha256:b4ef8bda9ce06b8a4b0fda85b93ab03b8bb34b216fda45b97e8f96d6929335f3", size = 13941200, upload-time = "2025-10-08T15:17:49.000Z" },
 ]
 
 [[package]]
@@ -1019,11 +1019,11 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.5.0"
+version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185, upload-time = "2025-06-18T14:07:41.644Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/27/a66c8a5b86da530771b68a86e9ff4ecb504d351ff66cf96b742e962ba146/urllib3-2.6.0.tar.gz", hash = "sha256:8f3c2bf70cba5b6cd247598c98b376cfb959038f9a9ebc2a2e9cb4fd5d7d3d83", size = 396512, upload-time = "2025-08-30T09:42:18.000Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795, upload-time = "2025-06-18T14:07:40.39Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/fe/8bdf7f0fa6a2bcddbbf67c2741064b4dad28343748f332fe37e0b4183a4e/urllib3-2.6.0-py3-none-any.whl", hash = "sha256:3c941c2f95d36f7423f9830ebc78be9cd60bb1c1d4490a6c76c7e1c531adf4d2", size = 130102, upload-time = "2025-08-30T09:42:16.000Z" },
 ]
 
 [[package]]
