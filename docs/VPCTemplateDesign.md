@@ -46,13 +46,6 @@
 - Owner: 部署名
 - CostCenter: 4桁数字
 
-## 設定値
-
-https://s3.ap-northeast-1.amazonaws.com/cf-templates-1r07wp6d8pz2e-ap-northeast-1/2025-09-29T085627.551Zdq8-VPC.yaml
-
-- ipam-pool-0bd1bcd051f200944
-- tgw-0bd3a221f476917d8
-
 ## 参考
 
 https://github.com/aws-cloudformation/aws-cloudformation-templates/blob/main/VPC/VPC_With_Managed_NAT_And_Private_Subnet.yaml
