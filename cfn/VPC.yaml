@@ -23,10 +23,10 @@ Metadata:
           default: "Transit Gateway Configuration"
         Parameters:
           - TransitGatewayId
-      - Label:
-          default: "Route 53 Configuration"
-        Parameters:
-          - ResolverRuleId
+      # - Label:
+      #     default: "Route 53 Configuration"
+      #   Parameters:
+      #     - ResolverRuleId
     ParameterLabels:
       System:
         default: "System Name"
@@ -42,8 +42,8 @@ Metadata:
         default: "IPAM Pool ID"
       TransitGatewayId:
         default: "Transit Gateway ID"
-      ResolverRuleId:
-        default: "Resolver Rule ID"
+      # ResolverRuleId:
+      #   default: "Resolver Rule ID"
 
 Parameters:
   System:
@@ -97,11 +97,11 @@ Parameters:
     AllowedPattern: "^tgw-[0-9a-f]{17}$"
     ConstraintDescription: "Must be a valid Transit Gateway ID (tgw-xxxxxxxxxxxxxxxxx)."
 
-  ResolverRuleId:
-    Type: String
-    Description: "Route 53 Resolver Rule ID to attach for DNS resolution. REQUIRED."
-    AllowedPattern: "^rslvr-rr-[0-9a-f]{17}$"
-    ConstraintDescription: "Must be a valid Resolver Rule ID (rslvr-rr-xxxxxxxxxxxxxxxxx)."
+  # ResolverRuleId:
+  #   Type: String
+  #   Description: "Route 53 Resolver Rule ID to attach for DNS resolution. REQUIRED."
+  #   AllowedPattern: "^rslvr-rr-[0-9a-f]{17}$"
+  #   ConstraintDescription: "Must be a valid Resolver Rule ID (rslvr-rr-xxxxxxxxxxxxxxxxx)."
 
 Resources:
   # VPC
@@ -281,7 +281,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       # TGW Subnet 1: Taking first /28 from the 7th /27 block
-      CidrBlock: !Select [0, !Cidr [!Select [6, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]], 2, 1]]  # /28 (16 IPs)
+      CidrBlock: !Select [0, !Cidr [!Select [6, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]], 2, 4]]  # /28 (16 IPs)
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
@@ -302,7 +302,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       # TGW Subnet 2: Taking second /28 from the 7th /27 block
-      CidrBlock: !Select [1, !Cidr [!Select [6, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]], 2, 1]]  # /28 (16 IPs)
+      CidrBlock: !Select [1, !Cidr [!Select [6, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]], 2, 4]]  # /28 (16 IPs)
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
@@ -454,6 +454,7 @@ Resources:
   # Routes to Transit Gateway
   ProtectedRouteToTgw:
     Type: AWS::EC2::Route
+    DependsOn: TransitGatewayAttachment
     Properties:
       RouteTableId: !Ref ProtectedRouteTable
       DestinationCidrBlock: 0.0.0.0/0
@@ -461,6 +462,7 @@ Resources:
 
   PrivateRouteToTgw:
     Type: AWS::EC2::Route
+    DependsOn: TransitGatewayAttachment
     Properties:
       RouteTableId: !Ref PrivateRouteTable
       DestinationCidrBlock: 0.0.0.0/0
@@ -468,17 +470,45 @@ Resources:
 
   TgwRouteToTgw:
     Type: AWS::EC2::Route
+    DependsOn: TransitGatewayAttachment
     Properties:
       RouteTableId: !Ref TgwRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       TransitGatewayId: !Ref TransitGatewayId
 
-  # Route 53 Resolver Rule Association
-  ResolverRuleAssociation:
-    Type: AWS::Route53Resolver::ResolverRuleAssociation
+  # Transit Gateway VPC Attachment
+  TransitGatewayAttachment:
+    Type: AWS::EC2::TransitGatewayVpcAttachment
     Properties:
-      ResolverRuleId: !Ref ResolverRuleId
-      VPCId: !Ref VPC
+      TransitGatewayId: !Ref TransitGatewayId
+      VpcId: !Ref VPC
+      SubnetIds:
+        - !Ref TgwSubnet1
+        - !Ref TgwSubnet2
+      Options:
+        DnsSupport: enable
+        ApplianceModeSupport: enable
+        SecurityGroupReferencingSupport: enable
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-tgw-attach-vpc"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # Route 53 Resolver Rule Association
+  # ResolverRuleAssociation:
+  #   Type: AWS::Route53Resolver::ResolverRuleAssociation
+  #   Properties:
+  #     ResolverRuleId: !Ref ResolverRuleId
+  #     VPCId: !Ref VPC
 
 Outputs:
   VpcId:
@@ -546,3 +576,9 @@ Outputs:
     Value: !Ref InternetGateway
     Export:
       Name: !Sub "${AWS::StackName}-IGW-ID"
+
+  TransitGatewayAttachmentId:
+    Description: Transit Gateway Attachment ID
+    Value: !Ref TransitGatewayAttachment
+    Export:
+      Name: !Sub "${AWS::StackName}-TGW-Attachment-ID"
