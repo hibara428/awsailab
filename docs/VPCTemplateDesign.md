@@ -2,14 +2,14 @@
 
 ## コンポーネント
 
-- VPC
+- VPC /24
   - IPAM Pool 指定
   - （別で作成された）Route 53 Resolver Rule のアタッチメント
 - Subnets
-  - public subnet x 2
-  - protected subnet x 2
-  - private subnet x 2
-  - TGW subnet x 2
+  - public subnet /27 x 2AZ
+  - protected subnet /27 x 2AZ
+  - private subnet /27 x 2AZ
+  - TGW subnet /28 x 2AZ
 - Route tables
   - public route table
     - VPC 内通信
@@ -45,10 +45,6 @@
 - Project プロジェクト名
 - Owner: 部署名
 - CostCenter: 4桁数字
-
-## TODO
-
-CIDR 分割
 
 ## 参考
 
