@@ -37,9 +37,17 @@
 - System: システム名
 - Environment: prod,stg,dev のいずれか
 
+### タグ
+
+- Name: リソースごとの名前
+- Environment: dev,stg,prod
+- System: システム名
+- Project プロジェクト名
+- Owner: 部署名
+- CostCenter: 4桁数字
+
 ## TODO
 
-タグ
 CIDR 分割
 
 ## 参考

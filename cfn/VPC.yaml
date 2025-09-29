@@ -10,6 +10,12 @@ Metadata:
           - System
           - Environment
       - Label:
+          default: "Tag Information"
+        Parameters:
+          - Project
+          - Owner
+          - CostCenter
+      - Label:
           default: "VPC Configuration"
         Parameters:
           - IpamPoolId
@@ -46,6 +52,12 @@ Metadata:
         default: "System Name"
       Environment:
         default: "Environment"
+      Project:
+        default: "Project Name"
+      Owner:
+        default: "Owner Department"
+      CostCenter:
+        default: "Cost Center"
       IpamPoolId:
         default: "IPAM Pool ID"
       PublicSubnet1Cidr:
@@ -86,6 +98,28 @@ Parameters:
       - stg
       - dev
     ConstraintDescription: "Must be one of: prod, stg, dev"
+
+  Project:
+    Type: String
+    Description: "Project name for tagging. REQUIRED."
+    MinLength: 1
+    MaxLength: 100
+    ConstraintDescription: "Project name must be between 1 and 100 characters."
+
+  Owner:
+    Type: String
+    Description: "Owner department name for tagging. REQUIRED."
+    MinLength: 1
+    MaxLength: 100
+    ConstraintDescription: "Owner must be between 1 and 100 characters."
+
+  CostCenter:
+    Type: String
+    Description: "Cost center code for tagging (numeric). REQUIRED."
+    AllowedPattern: "^[0-9]+$"
+    MinLength: 1
+    MaxLength: 50
+    ConstraintDescription: "Cost center must be numeric and between 1 and 50 digits."
 
   IpamPoolId:
     Type: String
@@ -165,6 +199,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-vpc"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   # Internet Gateway
   InternetGateway:
@@ -173,6 +217,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-igw"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -191,8 +245,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-public-public-az1"
-        - Key: Type
-          Value: Public
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -204,8 +266,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-public-public-az2"
-        - Key: Type
-          Value: Public
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   # Protected Subnets
   ProtectedSubnet1:
@@ -217,8 +287,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-protected-az1"
-        - Key: Type
-          Value: Protected
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   ProtectedSubnet2:
     Type: AWS::EC2::Subnet
@@ -229,8 +307,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-protected-az2"
-        - Key: Type
-          Value: Protected
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   # Private Subnets
   PrivateSubnet1:
@@ -242,8 +328,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-private-az1"
-        - Key: Type
-          Value: Private
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -254,8 +348,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-private-az2"
-        - Key: Type
-          Value: Private
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   # TGW Subnets
   TgwSubnet1:
@@ -267,8 +369,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-tgw-az1"
-        - Key: Type
-          Value: Transit
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   TgwSubnet2:
     Type: AWS::EC2::Subnet
@@ -279,8 +389,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-tgw-az2"
-        - Key: Type
-          Value: Transit
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   # Route Tables
   # Public Route Table
@@ -291,6 +409,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-rtb-public-public"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -320,6 +448,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-rtb-private-protected"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   ProtectedSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -341,6 +479,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-rtb-private-private"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   PrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -362,6 +510,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-rtb-private-tgw"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
 
   TgwSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
