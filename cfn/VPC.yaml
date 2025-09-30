@@ -101,6 +101,7 @@ Parameters:
   ResolverRuleIds:
     Type: CommaDelimitedList
     Description: "Comma-separated list of Route 53 Resolver Rule IDs to attach for DNS resolution. At least one rule ID required. Format: rslvr-rr-xxxxxxxxxxxxxxxxx"
+    ConstraintDescription: "Must provide at least one Resolver Rule ID in format rslvr-rr-xxxxxxxxxxxxxxxxx"
 
 Resources:
   # VPC
@@ -497,6 +498,164 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-tgw-attach-vpc"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # Security Group for VPC Endpoints
+  VPCEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for VPC Endpoints
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: Allow HTTPS from VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-sg-protected-vpce"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # SSM VPC Endpoint
+  SSMEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref ProtectedSubnet1
+        - !Ref ProtectedSubnet2
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-vpce-ssm"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # SSM Messages VPC Endpoint
+  SSMMessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref ProtectedSubnet1
+        - !Ref ProtectedSubnet2
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-vpce-ssmmessages"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # EC2 Messages VPC Endpoint
+  EC2MessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2messages"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref ProtectedSubnet1
+        - !Ref ProtectedSubnet2
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-vpce-ec2messages"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # CloudWatch Logs VPC Endpoint
+  CloudWatchLogsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref ProtectedSubnet1
+        - !Ref ProtectedSubnet2
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-vpce-logs"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # S3 Gateway Endpoint for SSM patch downloads
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcEndpointType: Gateway
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+        - !Ref ProtectedRouteTable
+      Tags:
+        - Key: Name
+          Value: !Sub "${System}-${Environment}-vpce-s3"
         - Key: Environment
           Value: !Ref Environment
         - Key: System
