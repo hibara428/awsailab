@@ -24,6 +24,11 @@
     - VPC 内通信
     - 0.0.0.0/0：TGW へ
 - IGW
+- VPCEndpoint
+  - ssm
+  - ssmmessages
+  - ec2messages
+  - logs
 
 ## 設計指針
 

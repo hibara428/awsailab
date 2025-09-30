@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "VPC Template with IPAM, Multiple Subnets, Route Tables, and IGW"
+Transform: AWS::LanguageExtensions
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -672,7 +673,7 @@ Resources:
   Fn::ForEach::ResolverRules:
     - RuleId
     - !Ref ResolverRuleIds
-    - ResolverRuleAssociation-${RuleId}:
+    - ResolverRuleAssociation${RuleId}:
         Type: AWS::Route53Resolver::ResolverRuleAssociation
         Properties:
           ResolverRuleId: !Ref RuleId
