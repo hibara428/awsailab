@@ -26,7 +26,7 @@ Metadata:
       - Label:
           default: "Route 53 Configuration"
         Parameters:
-          - ResolverRuleId
+          - ResolverRuleIds
     ParameterLabels:
       System:
         default: "System Name"
@@ -42,8 +42,8 @@ Metadata:
         default: "IPAM Pool ID"
       TransitGatewayId:
         default: "Transit Gateway ID"
-      ResolverRuleId:
-        default: "Resolver Rule ID"
+      ResolverRuleIds:
+        default: "Resolver Rule IDs"
 
 Parameters:
   System:
@@ -94,14 +94,13 @@ Parameters:
   TransitGatewayId:
     Type: String
     Description: "Existing Transit Gateway ID for connectivity. REQUIRED."
+    Default: "tgw-0123456789abcdef0"
     AllowedPattern: "^tgw-[0-9a-f]{17}$"
     ConstraintDescription: "Must be a valid Transit Gateway ID (tgw-xxxxxxxxxxxxxxxxx)."
 
-  ResolverRuleId:
-    Type: String
-    Description: "Route 53 Resolver Rule ID to attach for DNS resolution. REQUIRED."
-    AllowedPattern: "^rslvr-rr-[0-9a-f]{17}$"
-    ConstraintDescription: "Must be a valid Resolver Rule ID (rslvr-rr-xxxxxxxxxxxxxxxxx)."
+  ResolverRuleIds:
+    Type: CommaDelimitedList
+    Description: "Comma-separated list of Route 53 Resolver Rule IDs to attach for DNS resolution. At least one rule ID required. Format: rslvr-rr-xxxxxxxxxxxxxxxxx"
 
 Resources:
   # VPC
@@ -509,12 +508,16 @@ Resources:
         - Key: CostCenter
           Value: !Ref CostCenter
 
-  # Route 53 Resolver Rule Association
-  ResolverRuleAssociation:
-    Type: AWS::Route53Resolver::ResolverRuleAssociation
-    Properties:
-      ResolverRuleId: !Ref ResolverRuleId
-      VPCId: !Ref VPC
+  # Route 53 Resolver Rule Associations - Dynamic creation using Fn::ForEach
+  # Creates one association per rule ID in the comma-delimited list
+  Fn::ForEach::ResolverRules:
+    - RuleId
+    - !Ref ResolverRuleIds
+    - ResolverRuleAssociation-${RuleId}:
+        Type: AWS::Route53Resolver::ResolverRuleAssociation
+        Properties:
+          ResolverRuleId: !Ref RuleId
+          VPCId: !Ref VPC
 
 Outputs:
   VpcId:
