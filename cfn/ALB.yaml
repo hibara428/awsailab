@@ -5,13 +5,10 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: "Naming Convention"
+          default: "Tag Information"
         Parameters:
           - System
           - Environment
-      - Label:
-          default: "Tag Information"
-        Parameters:
           - Project
           - Owner
           - CostCenter
