@@ -5,23 +5,19 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: "Naming Convention"
+          default: "Tag Information"
         Parameters:
           - System
           - Environment
-          - TierName
-      - Label:
-          default: "Tag Information"
-        Parameters:
           - Project
           - Owner
           - CostCenter
       - Label:
-          default: "Application Configuration"
+          default: "Server Configuration"
         Parameters:
+          - ServerName
           - DomainName
-          - ApplicationPort
-          - HealthCheckPath
+          - ServerPort
       - Label:
           default: "Network Configuration"
         Parameters:
@@ -39,6 +35,7 @@ Metadata:
           - ALBListenerArn
           - ALBSecurityGroupId
           - ListenerPriority
+          - HealthCheckPath
       - Label:
           default: "Auto Scaling Configuration"
         Parameters:
@@ -48,8 +45,8 @@ Metadata:
         default: "System Name"
       Environment:
         default: "Environment"
-      TierName:
-        default: "Tier Name"
+      ServerName:
+        default: "Server Name"
       Project:
         default: "Project Name"
       Owner:
@@ -68,7 +65,7 @@ Metadata:
         default: "Domain Name"
       ALBSecurityGroupId:
         default: "ALB Security Group ID"
-      ApplicationPort:
+      ServerPort:
         default: "Application Port"
       HealthCheckPath:
         default: "Health Check Path"
@@ -99,9 +96,9 @@ Parameters:
       - dev
     ConstraintDescription: "Must be one of: prod, stg, dev"
 
-  TierName:
+  ServerName:
     Type: String
-    Description: "Tier name (e.g., web, app, api). Used for resource naming. REQUIRED."
+    Description: "Server name for resource naming (e.g., web, app, api). REQUIRED."
     MinLength: 1
     MaxLength: 20
     AllowedPattern: "^[a-z0-9-]+$"
@@ -160,7 +157,7 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: "ALB Security Group ID that is allowed to access this tier. REQUIRED."
 
-  ApplicationPort:
+  ServerPort:
     Type: Number
     Description: "Port number the application listens on. REQUIRED."
     MinValue: 1
@@ -204,18 +201,18 @@ Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${System}-${Environment}-sg-${TierName}
-      GroupDescription: !Sub Security group for ${TierName} tier
+      GroupName: !Sub ${System}-${Environment}-sg-${ServerName}
+      GroupDescription: !Sub Security group for ${ServerName}
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: !Ref ApplicationPort
-          ToPort: !Ref ApplicationPort
+          FromPort: !Ref ServerPort
+          ToPort: !Ref ServerPort
           SourceSecurityGroupId: !Ref ALBSecurityGroupId
-          Description: !Sub Allow traffic from ALB on port ${ApplicationPort}
+          Description: !Sub Allow traffic from ALB on port ${ServerPort}
       Tags:
         - Key: Name
-          Value: !Sub ${System}-${Environment}-sg-${TierName}
+          Value: !Sub ${System}-${Environment}-sg-${ServerName}
         - Key: Environment
           Value: !Ref Environment
         - Key: System
@@ -226,12 +223,14 @@ Resources:
           Value: !Ref Owner
         - Key: CostCenter
           Value: !Ref CostCenter
+        - Key: ServerName
+          Value: !Ref ServerName
 
   # IAM Role
   IAMRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${System}-${Environment}-role-${TierName}
+      RoleName: !Sub ${System}-${Environment}-role-${ServerName}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -244,7 +243,7 @@ Resources:
         - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
       Tags:
         - Key: Name
-          Value: !Sub ${System}-${Environment}-role-${TierName}
+          Value: !Sub ${System}-${Environment}-role-${ServerName}
         - Key: Environment
           Value: !Ref Environment
         - Key: System
@@ -260,7 +259,7 @@ Resources:
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub ${System}-${Environment}-profile-${TierName}
+      InstanceProfileName: !Sub ${System}-${Environment}-profile-${ServerName}
       Roles:
         - !Ref IAMRole
 
@@ -268,7 +267,7 @@ Resources:
   LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
-      LaunchTemplateName: !Sub ${System}-${Environment}-lt-${TierName}
+      LaunchTemplateName: !Sub ${System}-${Environment}-lt-${ServerName}
       LaunchTemplateData:
         ImageId: !Ref AmiId
         InstanceType: !Ref InstanceType
@@ -281,7 +280,7 @@ Resources:
           - ResourceType: instance
             Tags:
               - Key: Name
-                Value: !Sub ${System}-${Environment}-ec2-${TierName}
+                Value: !Sub ${System}-${Environment}-ec2-${ServerName}
               - Key: Environment
                 Value: !Ref Environment
               - Key: System
@@ -295,7 +294,7 @@ Resources:
           - ResourceType: volume
             Tags:
               - Key: Name
-                Value: !Sub ${System}-${Environment}-ebs-${TierName}
+                Value: !Sub ${System}-${Environment}-ebs-${ServerName}
               - Key: Environment
                 Value: !Ref Environment
               - Key: System
@@ -311,8 +310,8 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub ${System}-${Environment}-tg-${TierName}
-      Port: !Ref ApplicationPort
+      Name: !Sub ${System}-${Environment}-tg-${ServerName}
+      Port: !Ref ServerPort
       Protocol: HTTP
       VpcId: !Ref VpcId
       TargetType: instance
@@ -324,7 +323,7 @@ Resources:
           Value: "true"
       Tags:
         - Key: Name
-          Value: !Sub ${System}-${Environment}-tg-${TierName}
+          Value: !Sub ${System}-${Environment}-tg-${ServerName}
         - Key: Environment
           Value: !Ref Environment
         - Key: System
@@ -355,7 +354,7 @@ Resources:
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: !Sub ${System}-${Environment}-asg-${TierName}
+      AutoScalingGroupName: !Sub ${System}-${Environment}-asg-${ServerName}
       LaunchTemplate:
         LaunchTemplateId: !Ref LaunchTemplate
         Version: !GetAtt LaunchTemplate.LatestVersionNumber
@@ -369,7 +368,7 @@ Resources:
       HealthCheckGracePeriod: 300
       Tags:
         - Key: Name
-          Value: !Sub ${System}-${Environment}-asg-${TierName}
+          Value: !Sub ${System}-${Environment}-asg-${ServerName}
           PropagateAtLaunch: false
         - Key: Environment
           Value: !Ref Environment
@@ -391,7 +390,7 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/${System}/${Environment}/${TierName}
+      LogGroupName: !Sub /aws/${System}/${Environment}/${ServerName}
       RetentionInDays: 30
 
 Outputs:
