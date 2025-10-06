@@ -1,0 +1,433 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Generic Application Tier Template (Web/App/API layers)"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Naming Convention"
+        Parameters:
+          - System
+          - Environment
+          - TierName
+      - Label:
+          default: "Tag Information"
+        Parameters:
+          - Project
+          - Owner
+          - CostCenter
+      - Label:
+          default: "Application Configuration"
+        Parameters:
+          - DomainName
+          - ApplicationPort
+          - HealthCheckPath
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - VpcId
+          - SubnetIds
+      - Label:
+          default: "Instance Configuration"
+        Parameters:
+          - AmiId
+          - InstanceType
+          - KeyName
+      - Label:
+          default: "Load Balancer Integration"
+        Parameters:
+          - ALBListenerArn
+          - ALBSecurityGroupId
+          - ListenerPriority
+      - Label:
+          default: "Auto Scaling Configuration"
+        Parameters:
+          - DesiredCapacity
+    ParameterLabels:
+      System:
+        default: "System Name"
+      Environment:
+        default: "Environment"
+      TierName:
+        default: "Tier Name"
+      Project:
+        default: "Project Name"
+      Owner:
+        default: "Owner Department"
+      CostCenter:
+        default: "Cost Center"
+      VpcId:
+        default: "VPC ID"
+      SubnetIds:
+        default: "Subnet IDs"
+      ALBListenerArn:
+        default: "ALB Listener ARN"
+      ListenerPriority:
+        default: "Listener Rule Priority"
+      DomainName:
+        default: "Domain Name"
+      ALBSecurityGroupId:
+        default: "ALB Security Group ID"
+      ApplicationPort:
+        default: "Application Port"
+      HealthCheckPath:
+        default: "Health Check Path"
+      AmiId:
+        default: "AMI ID"
+      InstanceType:
+        default: "Instance Type"
+      KeyName:
+        default: "EC2 Key Pair Name"
+      DesiredCapacity:
+        default: "Desired Capacity"
+
+Parameters:
+  System:
+    Type: String
+    Description: "System name for the naming convention prefix. REQUIRED."
+    MinLength: 1
+    MaxLength: 50
+    AllowedPattern: "^[a-zA-Z0-9-]+$"
+    ConstraintDescription: "Must contain only alphanumeric characters and hyphens."
+
+  Environment:
+    Type: String
+    Description: "Environment for the naming convention prefix. REQUIRED."
+    AllowedValues:
+      - prod
+      - stg
+      - dev
+    ConstraintDescription: "Must be one of: prod, stg, dev"
+
+  TierName:
+    Type: String
+    Description: "Tier name (e.g., web, app, api). Used for resource naming. REQUIRED."
+    MinLength: 1
+    MaxLength: 20
+    AllowedPattern: "^[a-z0-9-]+$"
+    ConstraintDescription: "Must contain only lowercase alphanumeric characters and hyphens."
+
+  Project:
+    Type: String
+    Description: "Project name for tagging. REQUIRED."
+    MinLength: 1
+    MaxLength: 100
+    ConstraintDescription: "Project name must be between 1 and 100 characters."
+
+  Owner:
+    Type: String
+    Description: "Owner department name for tagging. REQUIRED."
+    MinLength: 1
+    MaxLength: 100
+    ConstraintDescription: "Owner must be between 1 and 100 characters."
+
+  CostCenter:
+    Type: String
+    Description: "Cost center code for tagging (numeric). REQUIRED."
+    AllowedPattern: "^[0-9]+$"
+    MinLength: 1
+    MaxLength: 50
+    ConstraintDescription: "Cost center must be numeric and between 1 and 50 digits."
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC ID where resources will be deployed. REQUIRED."
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: "Comma-separated list of subnet IDs for deployment. REQUIRED."
+
+  ALBListenerArn:
+    Type: String
+    Description: "ARN of the ALB Listener to attach target group. REQUIRED."
+    AllowedPattern: "^arn:aws(-[a-z]+)?:elasticloadbalancing:.*:listener/app/.*$"
+    ConstraintDescription: "Must be a valid ALB Listener ARN."
+
+  ListenerPriority:
+    Type: Number
+    Description: "Priority for the listener rule (1-50000). Lower numbers have higher priority. REQUIRED."
+    MinValue: 1
+    MaxValue: 50000
+    Default: 100
+
+  DomainName:
+    Type: String
+    Description: "Domain name for host-based routing (e.g., web.example.com, api.example.com). REQUIRED."
+    AllowedPattern: '^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
+    ConstraintDescription: "Must be a valid domain name."
+
+  ALBSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: "ALB Security Group ID that is allowed to access this tier. REQUIRED."
+
+  ApplicationPort:
+    Type: Number
+    Description: "Port number the application listens on. REQUIRED."
+    MinValue: 1
+    MaxValue: 65535
+    Default: 80
+
+  HealthCheckPath:
+    Type: String
+    Description: "Path for ALB health checks. REQUIRED."
+    Default: "/"
+
+  AmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Description: "AMI ID for instances. Uses latest Amazon Linux 2 by default."
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+  InstanceType:
+    Type: String
+    Description: "EC2 instance type. REQUIRED."
+    Default: t3.micro
+    AllowedPattern: "^[a-z][1-9][.][a-zA-Z]+$"
+    ConstraintDescription: "Must be a valid EC2 instance type."
+
+  KeyName:
+    Type: String
+    Description: "Name of an existing EC2 KeyPair for SSH access. Leave empty for no SSH access."
+    Default: ""
+
+  DesiredCapacity:
+    Type: Number
+    Description: "Desired number of instances in Auto Scaling Group. REQUIRED."
+    Default: 2
+    MinValue: 0
+    MaxValue: 10
+    ConstraintDescription: "Must be between 0 and 10."
+
+Conditions:
+  HasKeyName: !Not [!Equals [!Ref KeyName, ""]]
+
+Resources:
+  # Security Group
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${System}-${Environment}-sg-${TierName}
+      GroupDescription: !Sub Security group for ${TierName} tier
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ApplicationPort
+          ToPort: !Ref ApplicationPort
+          SourceSecurityGroupId: !Ref ALBSecurityGroupId
+          Description: !Sub Allow traffic from ALB on port ${ApplicationPort}
+      Tags:
+        - Key: Name
+          Value: !Sub ${System}-${Environment}-sg-${TierName}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # IAM Role
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${System}-${Environment}-role-${TierName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      Tags:
+        - Key: Name
+          Value: !Sub ${System}-${Environment}-role-${TierName}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # Instance Profile
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub ${System}-${Environment}-profile-${TierName}
+      Roles:
+        - !Ref IAMRole
+
+  # Launch Template
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${System}-${Environment}-lt-${TierName}
+      LaunchTemplateData:
+        ImageId: !Ref AmiId
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile:
+          Arn: !GetAtt InstanceProfile.Arn
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        KeyName: !If [HasKeyName, !Ref KeyName, !Ref AWS::NoValue]
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub ${System}-${Environment}-ec2-${TierName}
+              - Key: Environment
+                Value: !Ref Environment
+              - Key: System
+                Value: !Ref System
+              - Key: Project
+                Value: !Ref Project
+              - Key: Owner
+                Value: !Ref Owner
+              - Key: CostCenter
+                Value: !Ref CostCenter
+          - ResourceType: volume
+            Tags:
+              - Key: Name
+                Value: !Sub ${System}-${Environment}-ebs-${TierName}
+              - Key: Environment
+                Value: !Ref Environment
+              - Key: System
+                Value: !Ref System
+              - Key: Project
+                Value: !Ref Project
+              - Key: Owner
+                Value: !Ref Owner
+              - Key: CostCenter
+                Value: !Ref CostCenter
+
+  # Target Group
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${System}-${Environment}-tg-${TierName}
+      Port: !Ref ApplicationPort
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: instance
+      HealthCheckEnabled: true
+      HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckProtocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: "true"
+      Tags:
+        - Key: Name
+          Value: !Sub ${System}-${Environment}-tg-${TierName}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: System
+          Value: !Ref System
+        - Key: Project
+          Value: !Ref Project
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  # Listener Rule
+  ListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - !Ref DomainName
+      ListenerArn: !Ref ALBListenerArn
+      Priority: !Ref ListenerPriority
+
+  # Auto Scaling Group
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub ${System}-${Environment}-asg-${TierName}
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      MinSize: 0
+      MaxSize: 10
+      DesiredCapacity: !Ref DesiredCapacity
+      VPCZoneIdentifier: !Ref SubnetIds
+      TargetGroupARNs:
+        - !Ref TargetGroup
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+      Tags:
+        - Key: Name
+          Value: !Sub ${System}-${Environment}-asg-${TierName}
+          PropagateAtLaunch: false
+        - Key: Environment
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+        - Key: System
+          Value: !Ref System
+          PropagateAtLaunch: true
+        - Key: Project
+          Value: !Ref Project
+          PropagateAtLaunch: true
+        - Key: Owner
+          Value: !Ref Owner
+          PropagateAtLaunch: true
+        - Key: CostCenter
+          Value: !Ref CostCenter
+          PropagateAtLaunch: true
+
+  # CloudWatch Log Group
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${System}/${Environment}/${TierName}
+      RetentionInDays: 30
+
+Outputs:
+  SecurityGroupId:
+    Description: Security Group ID for this tier
+    Value: !Ref SecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-SG-ID"
+
+  TargetGroupArn:
+    Description: Target Group ARN for this tier
+    Value: !Ref TargetGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-TG-ARN"
+
+  AutoScalingGroupName:
+    Description: Auto Scaling Group name for this tier
+    Value: !Ref AutoScalingGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-ASG-Name"
+
+  LaunchTemplateId:
+    Description: Launch Template ID for this tier
+    Value: !Ref LaunchTemplate
+    Export:
+      Name: !Sub "${AWS::StackName}-LT-ID"
+
+  IAMRoleArn:
+    Description: IAM Role ARN for this tier
+    Value: !GetAtt IAMRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-Role-ARN"
+
+  LogGroupName:
+    Description: CloudWatch Log Group name for this tier
+    Value: !Ref LogGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-LogGroup"
