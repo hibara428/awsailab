@@ -175,7 +175,6 @@ Parameters:
   AmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Description: "AMI ID for instances. Uses latest Amazon Linux 2 by default."
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
   InstanceType:
     Type: String
@@ -192,7 +191,7 @@ Parameters:
   DesiredCapacity:
     Type: Number
     Description: "Desired number of instances in Auto Scaling Group. REQUIRED."
-    Default: 2
+    Default: 1
     MinValue: 0
     MaxValue: 10
     ConstraintDescription: "Must be between 0 and 10."
