@@ -17,6 +17,7 @@ Metadata:
           default: "VPC Configuration"
         Parameters:
           - IpamPoolId
+          - AzIdList
       - Label:
           default: "Transit Gateway Configuration"
         Parameters:
@@ -38,6 +39,8 @@ Metadata:
         default: "Cost Center"
       IpamPoolId:
         default: "IPAM Pool ID"
+      AzIdList:
+        default: "Availability Zone IDs"
       TransitGatewayId:
         default: "Transit Gateway ID"
       ResolverRuleIds:
@@ -88,6 +91,11 @@ Parameters:
     Description: "IPAM Pool ID for automatic VPC CIDR allocation. REQUIRED."
     AllowedPattern: "^ipam-pool-[0-9a-f]{17}$"
     ConstraintDescription: "Must be a valid IPAM Pool ID (ipam-pool-xxxxxxxxxxxxxxxxx)."
+
+  AzIdList:
+    Type: CommaDelimitedList
+    Description: "Comma-separated Availability Zone IDs used for subnet placement. Defaults target apne1-az1 and apne1-az4."
+    Default: "apne1-az1,apne1-az4"
 
   TransitGatewayId:
     Type: String
@@ -154,7 +162,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Select [0, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]] # /27 (32 IPs)
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZoneId: !Select [0, !Ref AzIdList]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -175,7 +183,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Select [1, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]] # /27 (32 IPs)
-      AvailabilityZone: !Select [1, !GetAZs ""]
+      AvailabilityZoneId: !Select [1, !Ref AzIdList]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -197,7 +205,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Select [2, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]] # /27 (32 IPs)
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZoneId: !Select [0, !Ref AzIdList]
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-protected-az1"
@@ -217,7 +225,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Select [3, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]] # /27 (32 IPs)
-      AvailabilityZone: !Select [1, !GetAZs ""]
+      AvailabilityZoneId: !Select [1, !Ref AzIdList]
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-protected-az2"
@@ -238,7 +246,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Select [4, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]] # /27 (32 IPs)
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZoneId: !Select [0, !Ref AzIdList]
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-private-az1"
@@ -258,7 +266,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Select [5, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]] # /27 (32 IPs)
-      AvailabilityZone: !Select [1, !GetAZs ""]
+      AvailabilityZoneId: !Select [1, !Ref AzIdList]
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-private-az2"
@@ -283,7 +291,7 @@ Resources:
           0,
           !Cidr [!Select [6, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]], 2, 4],
         ] # /28 (16 IPs)
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZoneId: !Select [0, !Ref AzIdList]
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-tgw-az1"
@@ -307,7 +315,7 @@ Resources:
           1,
           !Cidr [!Select [6, !Cidr [!GetAtt VPC.CidrBlock, 8, 5]], 2, 4],
         ] # /28 (16 IPs)
-      AvailabilityZone: !Select [1, !GetAZs ""]
+      AvailabilityZoneId: !Select [1, !Ref AzIdList]
       Tags:
         - Key: Name
           Value: !Sub "${System}-${Environment}-subnet-private-tgw-az2"
